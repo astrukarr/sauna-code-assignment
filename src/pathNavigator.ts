@@ -9,7 +9,7 @@ export function findStart(map: string[]): Position {
       return { x, y };
     }
   }
-  throw new Error('Start position "@" not found');
+  throw new Error('Start character "@" not found');
 }
 
 export function determineInitialDirection(
@@ -71,6 +71,12 @@ function findNewDirection(
 
 export function navigatePath(map: string[]) {
   const start = findStart(map);
+
+  const hasEndChar = map.some((line) => line.includes("x"));
+  if (!hasEndChar) {
+    throw new Error('End character "x" not found');
+  }
+
   let current = start;
   let direction = determineInitialDirection(map, start);
 

@@ -1,12 +1,5 @@
 import { Direction, Position, move } from "./types";
-
-function isLetter(char: string): boolean {
-  return /^[A-Z]$/.test(char);
-}
-
-function getCharAt(map: string[], pos: Position): string | undefined {
-  return map[pos.y]?.[pos.x];
-}
+import { isLetter, isValidStep, getCharAt } from "./helpers";
 
 export function findStart(map: string[]): Position {
   for (let y = 0; y < map.length; y++) {
@@ -17,13 +10,6 @@ export function findStart(map: string[]): Position {
     }
   }
   throw new Error('Start position "@" not found');
-}
-
-function isValidStep(char: string | undefined): boolean {
-  return (
-    !!char &&
-    (char === "-" || char === "|" || char === "+" || /[A-Zx]/.test(char))
-  );
 }
 
 export function determineInitialDirection(

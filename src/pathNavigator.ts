@@ -1,4 +1,12 @@
-import { Direction, Position } from "./types";
+import { Direction, Position, move } from "./types";
+
+function isLetter(char: string): boolean {
+  return /^[A-Z]$/.test(char);
+}
+
+function getCharAt(map: string[], pos: Position): string | undefined {
+  return map[pos.y]?.[pos.x];
+}
 
 export function findStart(map: string[]): Position {
   for (let y = 0; y < map.length; y++) {
@@ -40,4 +48,75 @@ export function determineInitialDirection(
   throw new Error(
     `Invalid start: found ${validOptions.length} possible directions`
   );
+}
+
+function findNewDirection(
+  map: string[],
+  pos: Position,
+  from: Direction
+): Direction {
+  const opposites: Record<Direction, Direction> = {
+    [Direction.Up]: Direction.Down,
+    [Direction.Down]: Direction.Up,
+    [Direction.Left]: Direction.Right,
+    [Direction.Right]: Direction.Left,
+  };
+
+  const candidates: Direction[] = [
+    Direction.Up,
+    Direction.Down,
+    Direction.Left,
+    Direction.Right,
+  ];
+
+  for (const dir of candidates) {
+    if (dir === opposites[from]) continue; // ne smijemo se vratiti nazad
+
+    const nextPos = move(pos, dir);
+    const char = getCharAt(map, nextPos);
+
+    if (isValidStep(char)) {
+      return dir;
+    }
+  }
+
+  throw new Error("No valid direction at +");
+}
+
+export function navigatePath(map: string[]) {
+  const start = findStart(map);
+  let current = start;
+  let direction = determineInitialDirection(map, start);
+
+  let path = "@";
+  let letters = "";
+  const visitedLetters = new Set<string>();
+
+  while (true) {
+    const next = move(current, direction);
+    const char = getCharAt(map, next);
+
+    if (!char) {
+      throw new Error("Broken path: reached empty space");
+    }
+
+    path += char;
+
+    if (char === "x") {
+      break;
+    }
+
+    if (isLetter(char) && !visitedLetters.has(`${next.x},${next.y}`)) {
+      letters += char;
+      visitedLetters.add(`${next.x},${next.y}`);
+    }
+
+    if (char === "+") {
+      direction = findNewDirection(map, next, direction);
+    }
+
+    current = next;
+  }
+
+  return { letters, path };
 }

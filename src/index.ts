@@ -1,5 +1,9 @@
 import { exampleMap1 } from "./map";
-import { findStart, determineInitialDirection } from "./pathNavigator";
+import {
+  findStart,
+  determineInitialDirection,
+  navigatePath,
+} from "./pathNavigator";
 import { Direction } from "./types";
 
 console.log("Loaded map:");
@@ -10,3 +14,7 @@ console.log("Start position:", start);
 
 const direction = determineInitialDirection(exampleMap1, start);
 console.log("Initial direction:", Direction[direction]);
+
+const result = navigatePath(exampleMap1);
+console.log("Letters:", result.letters);
+console.log("Path:", result.path);

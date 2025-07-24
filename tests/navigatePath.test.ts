@@ -42,4 +42,36 @@ describe("navigatePath", () => {
       'End character "x" not found'
     );
   });
+
+  it("should follow path through intersections and collect all letters", () => {
+    const map = [
+      "  @",
+      "  | +-C--+",
+      "  A |    |",
+      "  +---B--+",
+      "    |      x",
+      "    |      |",
+      "    +---D--+",
+    ];
+
+    const result = navigatePath(map);
+
+    expect(result.letters).toBe("ABCD");
+    expect(result.path).toBe("@|A+---B--+|+--C-+|-||+---D--+|x");
+  });
+
+  it("should collect letters even when found on turns", () => {
+    const map = [
+      "  @---A---+",
+      "          |",
+      "  x-B-+   |",
+      "      |   |",
+      "      +---C",
+    ];
+
+    const result = navigatePath(map);
+
+    expect(result.letters).toBe("ACB");
+    expect(result.path).toBe("@---A---+|||C---+|+-B-x");
+  });
 });

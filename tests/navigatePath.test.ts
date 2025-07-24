@@ -74,4 +74,30 @@ describe("navigatePath", () => {
     expect(result.letters).toBe("ACB");
     expect(result.path).toBe("@---A---+|||C---+|+-B-x");
   });
+
+  it("should ignore characters after the end of path", () => {
+    const map = ["  @-A--+", "       |", "       +-B--x-C--D"];
+
+    const result = navigatePath(map);
+
+    expect(result.letters).toBe("AB");
+    expect(result.path).toBe("@-A--+|+-B--x");
+  });
+  it("should throw an error if multiple start characters are present", () => {
+    const map = [
+      "   @--A-@-+",
+      "          |",
+      "  x-B-+   C",
+      "      |   |",
+      "      +---+",
+    ];
+
+    expect(() => navigatePath(map)).toThrow("Multiple start characters found");
+  });
+
+  it("should throw an error for broken path", () => {
+    const map = ["  @--A-+", "       |", "        ", "       B-x"];
+
+    expect(() => navigatePath(map)).toThrow("Broken path: reached empty space");
+  });
 });

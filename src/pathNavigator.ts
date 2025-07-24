@@ -56,7 +56,7 @@ function findNewDirection(
   ];
 
   for (const dir of candidates) {
-    if (dir === opposites[from]) continue; // ne smijemo se vratiti nazad
+    if (dir === opposites[from]) continue; // nemoj se vratiti nazad
 
     const nextPos = move(pos, dir);
     const char = getCharAt(map, nextPos);
@@ -88,23 +88,32 @@ export function navigatePath(map: string[]) {
     const next = move(current, direction);
     const char = getCharAt(map, next);
 
-    if (!char) {
+    if (!char || char === " ") {
       throw new Error("Broken path: reached empty space");
     }
 
     path += char;
 
-    if (char === "x") {
-      break;
-    }
-
+    // First, collect the letter if it hasn't been visited yet
     if (isLetter(char) && !visitedLetters.has(`${next.x},${next.y}`)) {
       letters += char;
       visitedLetters.add(`${next.x},${next.y}`);
     }
 
-    if (char === "+") {
-      direction = findNewDirection(map, next, direction);
+    // If the character is a + or letter, try to find a new direction if needed
+    if (char === "+" || isLetter(char)) {
+      try {
+        direction = findNewDirection(map, next, direction);
+      } catch {
+        // If no valid direction is found and it's not the end, throw an error
+        if (char !== "x") {
+          throw new Error("No valid direction at + or letter turn");
+        }
+      }
+    }
+
+    if (char === "x") {
+      break;
     }
 
     current = next;

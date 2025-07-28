@@ -7,18 +7,13 @@ export function findStart(map: string[]): Position {
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < map[y].length; x++) {
       if (map[y][x] === "@") {
-        if (found) {
-          throw new Error("Multiple start characters found");
-        }
+        if (found) throw new Error("Multiple start characters found");
         found = { x, y };
       }
     }
   }
 
-  if (!found) {
-    throw new Error('Start character "@" not found');
-  }
-
+  if (!found) throw new Error('Start character "@" not found');
   return found;
 }
 
@@ -37,97 +32,100 @@ export function determineInitialDirection(
 
   const validOptions = options.filter((opt) => isValidStep(opt.char));
 
-  if (validOptions.length === 1) {
-    return validOptions[0].dir;
-  }
+  if (validOptions.length === 1) return validOptions[0].dir;
 
   throw new Error(
     `Invalid start: found ${validOptions.length} possible directions`
   );
 }
 
-function findNewDirection(
-  map: string[],
-  pos: Position,
-  from: Direction
-): Direction {
-  const opposites: Record<Direction, Direction> = {
-    [Direction.Up]: Direction.Down,
-    [Direction.Down]: Direction.Up,
-    [Direction.Left]: Direction.Right,
-    [Direction.Right]: Direction.Left,
-  };
-
-  const candidates: Direction[] = [
-    Direction.Up,
-    Direction.Down,
-    Direction.Left,
-    Direction.Right,
-  ];
-
-  for (const dir of candidates) {
-    if (dir === opposites[from]) continue; // nemoj se vratiti nazad
-
-    const nextPos = move(pos, dir);
-    const char = getCharAt(map, nextPos);
-
-    if (isValidStep(char)) {
-      return dir;
-    }
-  }
-
-  throw new Error("No valid direction at +");
-}
-
 export function navigatePath(map: string[]) {
-  const start = findStart(map);
-
-  const hasEndChar = map.some((line) => line.includes("x"));
-  if (!hasEndChar) {
+  const hasEnd = map.some((row) => row.includes("x"));
+  if (!hasEnd) {
     throw new Error('End character "x" not found');
   }
+  const startPos = findStart(map);
+  let direction = determineInitialDirection(map, startPos);
 
-  let current = start;
-  let direction = determineInitialDirection(map, start);
-
-  let path = "@";
-  let letters = "";
+  const visitedTransitions = new Set<string>();
   const visitedLetters = new Set<string>();
 
+  let pos = startPos;
+  let path = "";
+  let letters = "";
+
   while (true) {
-    const next = move(current, direction);
-    const char = getCharAt(map, next);
-
-    if (!char || char === " ") {
-      throw new Error("Broken path: reached empty space");
-    }
-
+    const char = getCharAt(map, pos);
     path += char;
 
-    // First, collect the letter if it hasn't been visited yet
-    if (isLetter(char) && !visitedLetters.has(`${next.x},${next.y}`)) {
-      letters += char;
-      visitedLetters.add(`${next.x},${next.y}`);
-    }
+    const posKey = `${pos.x},${pos.y}`;
 
-    // If the character is a + or letter, try to find a new direction if needed
-    if (char === "+" || isLetter(char)) {
-      try {
-        direction = findNewDirection(map, next, direction);
-      } catch {
-        // If no valid direction is found and it's not the end, throw an error
-        if (char !== "x") {
-          throw new Error("No valid direction at + or letter turn");
-        }
+    if (isLetter(char)) {
+      const letterKey = `${char}@${posKey}`;
+      if (!visitedLetters.has(letterKey)) {
+        letters += char;
+        visitedLetters.add(letterKey);
       }
     }
 
-    if (char === "x") {
-      break;
+    if (char === "x") break;
+
+    const transitionKey = `${pos.x},${pos.y}->${direction}`;
+    if (visitedTransitions.has(transitionKey)) {
+      throw new Error("Infinite loop detected");
+    }
+    visitedTransitions.add(transitionKey);
+
+    let nextPos = move(pos, direction);
+    let nextChar = getCharAt(map, nextPos);
+
+    if (!isValidStep(nextChar)) {
+      // Try to turn at "+" or letter only
+      if (char === "+" || isLetter(char)) {
+        const possibleDirections = [
+          Direction.Up,
+          Direction.Down,
+          Direction.Left,
+          Direction.Right,
+        ].filter((d) => d !== getOppositeDirection(direction));
+
+        const validTurns = possibleDirections.filter((dir) => {
+          const candidate = move(pos, dir);
+          const candidateChar = getCharAt(map, candidate);
+          const transition = `${pos.x},${pos.y}->${dir}`;
+          return (
+            isValidStep(candidateChar) && !visitedTransitions.has(transition)
+          );
+        });
+
+        if (validTurns.length !== 1) {
+          throw new Error(
+            "No valid direction at + or letter turn (ambiguous fork)"
+          );
+        }
+
+        direction = validTurns[0];
+        nextPos = move(pos, direction);
+      } else {
+        throw new Error("Broken path: reached empty space");
+      }
     }
 
-    current = next;
+    pos = nextPos;
   }
 
   return { letters, path };
+}
+
+function getOppositeDirection(dir: Direction): Direction {
+  switch (dir) {
+    case Direction.Up:
+      return Direction.Down;
+    case Direction.Down:
+      return Direction.Up;
+    case Direction.Left:
+      return Direction.Right;
+    case Direction.Right:
+      return Direction.Left;
+  }
 }

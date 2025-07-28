@@ -1,4 +1,4 @@
-import { Position } from "./types";
+import { Position, Direction } from "./types";
 
 export function isLetter(char: string): boolean {
   return /^[A-Z]$/.test(char);
@@ -11,6 +11,8 @@ export function isValidStep(char: string | undefined): boolean {
   );
 }
 
-export function getCharAt(map: string[], pos: Position): string | undefined {
-  return map[pos.y]?.[pos.x];
+export function getCharAt(map: string[], pos: Position): string {
+  if (pos.y < 0 || pos.y >= map.length) return " ";
+  if (pos.x < 0 || pos.x >= map[pos.y].length) return " ";
+  return map[pos.y][pos.x] || " ";
 }

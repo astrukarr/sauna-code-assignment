@@ -102,8 +102,8 @@ describe("navigatePath - invalid maps", () => {
   });
   it("should throw an error if there is a fork in the path", () => {
     const map = [
-      "  x-B",
-      "    |",
+      "    x-B",
+      "      |",
       "@--A--+",
       "      |",
       "    x-+",
@@ -130,5 +130,11 @@ describe("navigatePath - invalid maps", () => {
     const result = navigatePath(map);
     expect(result.letters).toBe("GOONIES");
     expect(result.path).toBe("@-G-O-+|+-+|O||+-O-N-+|I|+-+|+-I-+|ES|x");
+  });
+
+  it("should throw an error on fake turn", () => {
+    const map = ["@-A-+-B-x"];
+
+    expect(() => navigatePath(map)).toThrow("Fake turn");
   });
 });

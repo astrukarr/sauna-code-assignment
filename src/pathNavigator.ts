@@ -56,10 +56,10 @@ export function navigatePath(map: string[]) {
 
   while (true) {
     const char = getCharAt(map, pos);
+    console.log(`At (${pos.x}, ${pos.y}) char=${char}, direction=${direction}`);
     path += char;
 
     const posKey = `${pos.x},${pos.y}`;
-
     if (isLetter(char)) {
       const letterKey = `${char}@${posKey}`;
       if (!visitedLetters.has(letterKey)) {
@@ -79,8 +79,11 @@ export function navigatePath(map: string[]) {
     let nextPos = move(pos, direction);
     let nextChar = getCharAt(map, nextPos);
 
+    if (char === "+" && nextChar !== undefined && isValidStep(nextChar)) {
+      throw new Error("Fake turn");
+    }
+
     if (!isValidStep(nextChar)) {
-      // Try to turn at "+" or letter only
       if (char === "+" || isLetter(char)) {
         const possibleDirections = [
           Direction.Up,
@@ -89,23 +92,19 @@ export function navigatePath(map: string[]) {
           Direction.Right,
         ].filter((d) => d !== getOppositeDirection(direction));
 
-        const validTurns = possibleDirections.filter((dir) => {
+        const allValidTurns = possibleDirections.filter((dir) => {
           const candidate = move(pos, dir);
           const candidateChar = getCharAt(map, candidate);
-          const transition = `${pos.x},${pos.y}->${dir}`;
-          return (
-            isValidStep(candidateChar) && !visitedTransitions.has(transition)
-          );
+          return isValidStep(candidateChar);
         });
 
-        if (validTurns.length !== 1) {
-          throw new Error(
-            "No valid direction at + or letter turn (ambiguous fork)"
-          );
+        if (allValidTurns.length > 1) {
+          throw new Error("No valid direction at + or letter turn");
         }
 
-        direction = validTurns[0];
+        direction = allValidTurns[0];
         nextPos = move(pos, direction);
+        nextChar = getCharAt(map, nextPos);
       } else {
         throw new Error("Broken path: reached empty space");
       }

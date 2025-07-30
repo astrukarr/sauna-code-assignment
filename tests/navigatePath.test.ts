@@ -52,6 +52,15 @@ describe("navigatePath - valid maps", () => {
     expect(result.letters).toBe("AB");
     expect(result.path).toBe("@-A--+|+-B--x");
   });
+
+  it("should keep direction even in a compact space", () => {
+    const map = [" +-L-+  ", " |  +A-+", "@B+ ++ H", " ++    x"];
+
+    const result = navigatePath(map);
+
+    expect(result.letters).toBe("BLAH");
+    expect(result.path).toBe("@B+++B|+-L-+A+++A-+Hx");
+  });
 });
 
 describe("navigatePath - invalid maps", () => {
@@ -133,7 +142,7 @@ describe("navigatePath - invalid maps", () => {
   });
 
   it("should throw an error on fake turn", () => {
-    const map = ["@-A-+-B-x"];
+    const map = ["    x", "    |", "@--A+--B"];
 
     expect(() => navigatePath(map)).toThrow("Fake turn");
   });

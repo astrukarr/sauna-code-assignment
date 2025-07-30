@@ -39,15 +39,30 @@ export function determineInitialDirection(
   );
 }
 
+/**
+ * Walks the path, collects letters, and returns both the letters and the path.
+ * Rules implemented:
+ * - Start at '@', finish at 'x'.
+ * - Valid path characters: '-', '|', '+', 'x', 'A'-'Z'.
+ * - On '+', you must turn orthogonally (not straight). If straight is also possible:
+ *    * if there are 0 or 1 orthogonal options → "Fake turn"
+ *    * if there are 2 orthogonal options → "No valid direction at + or letter turn" (fork)
+ * - Letters can appear on turns; collect a letter only once per location.
+ * - On a letter, if straight is blocked, you may turn (but not back the way you came).
+ * - Detect infinite loops by remembering transitions (position + incoming direction).
+ */
 export function navigatePath(map: string[]) {
   const hasEnd = map.some((row) => row.includes("x"));
   if (!hasEnd) {
     throw new Error('End character "x" not found');
   }
+
   const startPos = findStart(map);
   let direction = determineInitialDirection(map, startPos);
 
+  // Tracks transitions to detect loops: "x,y->direction"
   const visitedTransitions = new Set<string>();
+  // Tracks collected letters per coordinate (avoid collecting same letter twice at same cell)
   const visitedLetters = new Set<string>();
 
   let pos = startPos;
@@ -56,9 +71,9 @@ export function navigatePath(map: string[]) {
 
   while (true) {
     const char = getCharAt(map, pos);
-    console.log(`At (${pos.x}, ${pos.y}) char=${char}, direction=${direction}`);
     path += char;
 
+    // Collect letter at this location only once
     const posKey = `${pos.x},${pos.y}`;
     if (isLetter(char)) {
       const letterKey = `${char}@${posKey}`;
@@ -68,23 +83,80 @@ export function navigatePath(map: string[]) {
       }
     }
 
+    // Reached end
     if (char === "x") break;
 
+    // Loop detection: this position + current direction was already processed
     const transitionKey = `${pos.x},${pos.y}->${direction}`;
     if (visitedTransitions.has(transitionKey)) {
       throw new Error("Infinite loop detected");
     }
     visitedTransitions.add(transitionKey);
 
+    // --- Special handling for '+' (must turn orthogonally) ---
+    if (char === "+") {
+      // Orthogonal directions relative to current direction
+      const perpDirs =
+        direction === Direction.Up || direction === Direction.Down
+          ? [Direction.Left, Direction.Right]
+          : [Direction.Up, Direction.Down];
+
+      const validPerp = perpDirs.filter((d) => {
+        const p = move(pos, d);
+        return isValidStep(getCharAt(map, p));
+      });
+
+      // Check "straight" ahead to decide Fake turn / Fork only when straight is valid
+      const forwardPos = move(pos, direction);
+      const forwardChar = getCharAt(map, forwardPos);
+      const forwardValid = isValidStep(forwardChar);
+
+      // Previous cell (where we came from). Letters count as straight segments here.
+      const prevPos = move(pos, getOppositeDirection(direction));
+      const prevChar = getCharAt(map, prevPos);
+      const cameFromStraight =
+        prevChar === "-" || prevChar === "|" || isLetter(prevChar);
+
+      if (forwardValid && cameFromStraight) {
+        // '+' with a valid straight continuation:
+        // 0 or 1 orthogonal → Fake '+', 2 orthogonals → illegal fork
+        if (validPerp.length <= 1) {
+          throw new Error("Fake turn");
+        } else {
+          throw new Error("No valid direction at + or letter turn");
+        }
+      }
+
+      // No straight continuation → choose among orthogonals
+      if (validPerp.length === 0) {
+        throw new Error("Broken path: reached empty space");
+      }
+
+      if (validPerp.length > 1) {
+        // Pick an unused perpendicular direction if possible
+        const nextDir = validPerp.find(
+          (d) => !visitedTransitions.has(`${pos.x},${pos.y}->${d}`)
+        );
+        if (!nextDir) {
+          // Both exits already used → ambiguous crossing / loop
+          throw new Error("No valid direction at + or letter turn");
+        }
+        direction = nextDir;
+      } else {
+        direction = validPerp[0];
+      }
+
+      pos = move(pos, direction);
+      continue;
+    }
+    // --- End of '+' handling ---
+
+    // Try to go straight; if blocked, a letter may act as a turn (not backwards)
     let nextPos = move(pos, direction);
     let nextChar = getCharAt(map, nextPos);
 
-    if (char === "+" && nextChar !== undefined && isValidStep(nextChar)) {
-      throw new Error("Fake turn");
-    }
-
     if (!isValidStep(nextChar)) {
-      if (char === "+" || isLetter(char)) {
+      if (isLetter(char)) {
         const possibleDirections = [
           Direction.Up,
           Direction.Down,
@@ -98,7 +170,12 @@ export function navigatePath(map: string[]) {
           return isValidStep(candidateChar);
         });
 
+        if (allValidTurns.length === 0) {
+          throw new Error("Broken path: reached empty space");
+        }
+
         if (allValidTurns.length > 1) {
+          // Multiple valid turns from a letter → considered an invalid fork
           throw new Error("No valid direction at + or letter turn");
         }
 

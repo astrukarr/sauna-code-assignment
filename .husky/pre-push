@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Building..."
+npm run build || { echo "Build failed. Push aborted."; exit 1; }
+
+echo "Unit tests..."
+npm run test:unit || { echo "Unit tests failed. Push aborted."; exit 1; }
+
+echo "Acceptance tests..."
+npm run test:acceptance || { echo "Acceptance tests failed. Push aborted."; exit 1; }
+
+echo "All good — pushing..."

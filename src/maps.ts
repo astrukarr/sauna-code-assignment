@@ -30,3 +30,5 @@ export const exampleMap4 = [
 ];
 
 export const exampleMap5 = [" +-L-+  ", " |  +A-+", "@B+ ++ H", " ++    x"];
+
+export const exampleMap6 = ["x-B-@-A-x"];

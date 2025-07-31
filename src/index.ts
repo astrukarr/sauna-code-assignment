@@ -1,7 +1,7 @@
-import { navigatePath } from "./helpers/handleLetterTurn";
 import * as Maps from "./maps";
 import { determineInitialDirection } from "./pathNavigator/determineInitialDirection";
 import { findStart } from "./pathNavigator/findStart";
+import { navigatePath } from "./pathNavigator/navigatePath";
 
 import { Direction } from "./types";
 

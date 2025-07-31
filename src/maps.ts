@@ -1,4 +1,4 @@
-export const exampleMap = [
+export const exampleMap1 = [
   "  @---A---+",
   "          |",
   "  x-B-+   C",
@@ -29,4 +29,4 @@ export const exampleMap4 = [
   "      +---+",
 ];
 
-export const exampleMap1 = [" +-L-+  ", " |  +A-+", "@B+ ++ H", " ++    x"];
+export const exampleMap5 = [" +-L-+  ", " |  +A-+", "@B+ ++ H", " ++    x"];

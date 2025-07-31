@@ -1,4 +1,4 @@
-import { navigatePath } from "../src/pathNavigator";
+import { navigatePath } from "../src/pathNavigator/navigatePath";
 
 const exampleMap = [
   "  @---A---+",

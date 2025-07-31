@@ -1,20 +1,20 @@
-import { exampleMap1 } from "./map";
-import {
-  findStart,
-  determineInitialDirection,
-  navigatePath,
-} from "./pathNavigator";
+import { navigatePath } from "./helpers/handleLetterTurn";
+import * as Maps from "./maps";
+import { determineInitialDirection } from "./pathNavigator/determineInitialDirection";
+import { findStart } from "./pathNavigator/findStart";
+
 import { Direction } from "./types";
 
+const selectedMap = Maps.exampleMap5;
+
 console.log("Loaded map:");
-exampleMap1.forEach((line) => console.log(line));
+selectedMap.forEach((line) => console.log(line));
 
-const start = findStart(exampleMap1);
-console.log("Start position:", start);
+const start = findStart(selectedMap);
+const direction = determineInitialDirection(selectedMap, start);
+const result = navigatePath(selectedMap);
 
-const direction = determineInitialDirection(exampleMap1, start);
+console.log("Start:", start);
 console.log("Initial direction:", Direction[direction]);
-
-const result = navigatePath(exampleMap1);
 console.log("Letters:", result.letters);
 console.log("Path:", result.path);

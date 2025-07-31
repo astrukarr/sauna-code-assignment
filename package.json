@@ -4,7 +4,14 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "jest"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "serve": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest",
+    "test:unit": "jest tests/unit --passWithNoTests",
+    "test:acceptance": "jest tests/acceptance --passWithNoTests",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +19,7 @@
   "description": "",
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",

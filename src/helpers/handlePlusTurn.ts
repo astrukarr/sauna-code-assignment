@@ -1,8 +1,9 @@
-import { Direction, move, Position } from "../types";
+import { Direction, Position } from "../types";
 import { getMapChar } from "./getMapChar";
 import { getOppositeDirection } from "./getOppositeDirection";
 import { isCollectibleLetter } from "./isCollectibleLetter";
 import { isValidMapStep } from "./isValidMapStep";
+import { move } from "./move";
 
 /** Handles '+' logic and returns new direction or throws error */
 export function handlePlusTurn(

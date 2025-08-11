@@ -4,8 +4,8 @@ import { handleLetterTurn } from "../helpers/handleLetterTurn";
 import { handlePlusTurn } from "../helpers/handlePlusTurn";
 import { isCollectibleLetter } from "../helpers/isCollectibleLetter";
 import { isValidMapStep } from "../helpers/isValidMapStep";
+import { move } from "../helpers/move";
 
-import { move } from "../types";
 import { determineInitialDirection } from "./determineInitialDirection";
 import { findStart } from "./findStart";
 

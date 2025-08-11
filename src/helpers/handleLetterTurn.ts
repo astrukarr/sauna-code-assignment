@@ -1,12 +1,8 @@
-import { determineInitialDirection } from "../pathNavigator/determineInitialDirection";
-import { findStart } from "../pathNavigator/findStart";
-import { Position, Direction, move } from "../types";
-import { collectLetter } from "./collectLetter";
+import { Position, Direction } from "../types";
 import { getMapChar } from "./getMapChar";
 import { getOppositeDirection } from "./getOppositeDirection";
-import { handlePlusTurn } from "./handlePlusTurn";
-import { isCollectibleLetter } from "./isCollectibleLetter";
 import { isValidMapStep } from "./isValidMapStep";
+import { move } from "./move";
 
 /** Handles letter as a turn if straight is blocked */
 export function handleLetterTurn(

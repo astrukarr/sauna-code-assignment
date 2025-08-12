@@ -10,13 +10,17 @@ export function handleLetterTurn(
   pos: Position,
   direction: Direction
 ): Direction {
+  const dirName = (d: Direction) => Direction[d];
+  const ctx = () => ` at (${pos.x},${pos.y}) facing ${dirName(direction)}`;
+
   const dirs = [Direction.Up, Direction.Down, Direction.Left, Direction.Right]
     .filter((d) => d !== getOppositeDirection(direction))
     .filter((d) => isValidMapStep(getMapChar(map, move(pos, d))));
 
-  if (dirs.length === 0) throw new Error("Broken path: reached empty space");
+  if (dirs.length === 0)
+    throw new Error("Broken path: reached empty space" + ctx());
   if (dirs.length > 1)
-    throw new Error("No valid direction at + or letter turn");
+    throw new Error("No valid direction at + or letter turn" + ctx());
 
   return dirs[0];
 }

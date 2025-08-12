@@ -12,35 +12,39 @@ export function handlePlusTurn(
   direction: Direction,
   visitedTransitions: Set<string>
 ): Direction {
+  const charInDirection = (d: Direction) => getMapChar(map, move(pos, d));
+  const dirName = (d: Direction) => Direction[d];
+  const ctx = () => ` at (${pos.x},${pos.y}) facing ${dirName(direction)}`;
+
   const perpDirs =
     direction === Direction.Up || direction === Direction.Down
       ? [Direction.Left, Direction.Right]
       : [Direction.Up, Direction.Down];
 
-  const validPerp = perpDirs.filter((d) =>
-    isValidMapStep(getMapChar(map, move(pos, d)))
-  );
+  const validPerp = perpDirs.filter((d) => isValidMapStep(charInDirection(d)));
 
-  const forwardChar = getMapChar(map, move(pos, direction));
+  const forwardChar = charInDirection(direction);
   const forwardValid = isValidMapStep(forwardChar);
 
-  const prevChar = getMapChar(map, move(pos, getOppositeDirection(direction)));
+  const prevChar = charInDirection(getOppositeDirection(direction));
   const cameFromStraight =
     ["-", "|"].includes(prevChar) || isCollectibleLetter(prevChar);
 
   if (forwardValid && cameFromStraight) {
-    if (validPerp.length <= 1) throw new Error("Fake turn");
-    throw new Error("No valid direction at + or letter turn");
+    if (validPerp.length <= 1) throw new Error("Fake turn" + ctx());
+    throw new Error("No valid direction at + or letter turn" + ctx());
   }
 
-  if (validPerp.length === 0)
-    throw new Error("Broken path: reached empty space");
+  if (validPerp.length === 0) {
+    throw new Error("Broken path: reached empty space" + ctx());
+  }
 
   if (validPerp.length > 1) {
     const nextDir = validPerp.find(
       (d) => !visitedTransitions.has(`${pos.x},${pos.y}->${d}`)
     );
-    if (!nextDir) throw new Error("No valid direction at + or letter turn");
+    if (!nextDir)
+      throw new Error("No valid direction at + or letter turn" + ctx());
     return nextDir;
   }
 
